@@ -7,10 +7,11 @@ const foo = (Comp) => (props) => {
     </div>
   );
 };
-function Child(props) {
-  return <div>chillld -- {props.name}</div>;
-}
-const Foo = foo(foo(Child));
+// function Child(props) {
+//   return <div>chillld -- {props.name}</div>;
+// }
+// const Foo = foo(foo(Child));
+@foo
 @foo
 class Child extends Component {
   render() {

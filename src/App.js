@@ -8,10 +8,11 @@ import "./App.css";
 // import ReactReduxPage from "./pages/ReactReduxPage";
 // import ContextPage from "./pages/ContextPage";
 // import HOCPage from "./pages/HOCPage";
-// import DecoratetPage from "./pages/DecoratetPage";
+import DecoratetPage from "./pages/DecoratetPage";
 // import FormPage from "./pages/FormPage";
 // import RCFormPage from "./components/RCFormPage";
-import RCForm from "./components/my-rc-form/RCForm";
+import MYRCFormPage from "./components/MYRCFormPage";
+import RCFormPage from "./pages/RCFormPage";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -36,10 +37,11 @@ function App() {
       {/* <ReactReduxPage /> */}
       {/* <ContextPage /> */}
       {/* <HOCPage /> */}
-      {/* <DecoratetPage /> */}
+      <DecoratetPage />
       {/* <FormPage /> */}
       {/* <RCFormPage /> */}
-      <RCForm />
+      {/* <MYRCFormPage /> */}
+      {/* <RCFormPage /> */}
     </div>
   );
 }

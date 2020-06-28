@@ -1,7 +1,7 @@
 import React from "react";
 import { Field, useForm, Form } from "./my-rc-form";
 
-const RCFormPage = (props) => {
+const MYRCFormPage = (props) => {
   const [form] = useForm();
   const onFinish = (val) => {
     console.log("finish", val);
@@ -30,4 +30,4 @@ const RCFormPage = (props) => {
   );
 };
 
-export default RCFormPage;
+export default MYRCFormPage;
