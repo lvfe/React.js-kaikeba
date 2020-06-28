@@ -1,26 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+// import { Button } from "antd";
+// import UseMemoPage from "./pages/UserMemoPage";
+// import UseCallBackPage from "./pages/UseCallbaclPage";
+// import SetStateComponent from "./pages/SetStatePage";
+// import LifeCyclePage from "./pages/LifecyclePage";
+// import ReactReduxPage from "./pages/ReactReduxPage";
+// import ContextPage from "./pages/ContextPage";
+// import HOCPage from "./pages/HOCPage";
+// import DecoratetPage from "./pages/DecoratetPage";
+// import FormPage from "./pages/FormPage";
+// import RCFormPage from "./components/RCFormPage";
+import RCForm from "./components/my-rc-form/RCForm";
 
 function App() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    // onluy work in componentDidMount/componentUpdate
+    console.log("count", count);
+
+    return () => {};
+  }, [count]);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {/* <UseMemoPage></UseMemoPage>
+      <UseCallBackPage></UseCallBackPage>
+      {count}
+      {useClock().toString()}
+      <Button type="primary" onClick={() => setCount(count + 1)}>
+        Test
+      </Button> */}
+      {/* <SetStateComponent /> */}
+      {/* <LifeCyclePage /> */}
+      {/* <ReactReduxPage /> */}
+      {/* <ContextPage /> */}
+      {/* <HOCPage /> */}
+      {/* <DecoratetPage /> */}
+      {/* <FormPage /> */}
+      {/* <RCFormPage /> */}
+      <RCForm />
     </div>
   );
 }
 
 export default App;
+// most outside, use***
+function useClock() {
+  const [date, setDate] = useState(new Date());
+  // if(date){
+  //   const [state, setstate] = useState(initialState) // wrong, not most outside
+  // }
+  useEffect(() => {
+    console.log("component did mount");
+
+    let timer = setInterval(() => {
+      setDate(new Date());
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+  return date;
+}

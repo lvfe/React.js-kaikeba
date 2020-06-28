@@ -1,0 +1,13 @@
+{
+  "editor.snippetSuggestions": "top",
+  "open-in-browser.default": "Chrome",
+  // Set the default
+  "editor.formatOnSave": false,
+  // Enable per-language
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "javascript.implicitProjectConfig.experimentalDecorators": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
