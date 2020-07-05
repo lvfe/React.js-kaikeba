@@ -1,23 +1,35 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
-class ReactReduxPage extends Component {
+import store from "../store/ReduxStore";
+export default class ReactReduxPage extends Component {
+  componentDidMount() {
+    this.unsubscribe = store.subscribe(() => {
+      // dispatch执行的时候 ，执行订阅函数
+      this.forceUpdate();
+      // if(XX) {//}
+    });
+    console.log(store.getState());
+  }
+
+  componentWillUnmount() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+
+  add = () => {
+    store.dispatch({ type: "ADD" });
+  };
   render() {
-    const { num, add } = this.props;
-    console.log(this.props);
     return (
       <div>
-        <h3>Redux - {num}</h3>
-        <button onClick={add}>Click button</button>
+        <h3>ReduxPage</h3>
+        <p>counter - {store.getState().counter}</p>
+        <button onClick={this.add}>add counter</button>
+        {/* <button onClick={this.asyAdd}>asyAdd</button>
+        <button onClick={this.promiseMinus}>promiseMinus</button> */}
+        <p>name - {store.getState().name}</p>
+        <button onClick={this.add}>add name</button>
       </div>
     );
   }
 }
-const mapStateTpProps = (state) => {
-  return { num: state };
-};
-const mapDispatchToProps = {
-  add: () => {
-    return { type: "ADD" };
-  },
-};
-export default connect(mapStateTpProps, mapDispatchToProps)(ReactReduxPage);

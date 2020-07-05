@@ -4,6 +4,7 @@ import { Form, Button, Input } from "antd";
 const FormItem = Form.Item;
 const nameRules = { required: true, message: "my name" };
 const passwordRules = { required: true, message: "my password" };
+// useImperativeHandler , forwardReff
 const FormPage = (props) => {
   const [form] = Form.useForm();
   const onFinish = (val) => {

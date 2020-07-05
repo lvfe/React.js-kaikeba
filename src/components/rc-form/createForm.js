@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+// 暗号：埃及
 const createForm = (props) => (Cmp) => {
   return class extends Component {
     constructor(props) {

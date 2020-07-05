@@ -5,7 +5,7 @@ import "./App.css";
 // import UseCallBackPage from "./pages/UseCallbaclPage";
 // import SetStateComponent from "./pages/SetStatePage";
 // import LifeCyclePage from "./pages/LifecyclePage";
-// import ReactReduxPage from "./pages/ReactReduxPage";
+import ReactReduxPage from "./pages/ReactReduxPage";
 // import ContextPage from "./pages/ContextPage";
 // import HOCPage from "./pages/HOCPage";
 import DecoratetPage from "./pages/DecoratetPage";
@@ -34,10 +34,10 @@ function App() {
       </Button> */}
       {/* <SetStateComponent /> */}
       {/* <LifeCyclePage /> */}
-      {/* <ReactReduxPage /> */}
+      <ReactReduxPage />
       {/* <ContextPage /> */}
       {/* <HOCPage /> */}
-      <DecoratetPage />
+      {/* <DecoratetPage /> */}
       {/* <FormPage /> */}
       {/* <RCFormPage /> */}
       {/* <MYRCFormPage /> */}
