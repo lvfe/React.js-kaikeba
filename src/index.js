@@ -51,7 +51,7 @@ const jsx = (
   <div className="border">
     <p>全站</p>
     <a href="http://localhost:9000">Link</a>
-    <FunctionComponent name="function"></FunctionComponent>
+    {/* <FunctionComponent name="function"></FunctionComponent>
     <ClassComponent name="class"></ClassComponent>
     {[1, 2].map((item) => (
       <div key={item}>{item}</div>
@@ -59,7 +59,7 @@ const jsx = (
     <>
       <h2>2</h2>
       <h2>3</h2>
-    </>
+    </> */}
   </div>
 );
 ReactDOM.render(jsx, document.getElementById("root"));
