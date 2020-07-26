@@ -5,9 +5,10 @@ const createElement = (type, config, ...children) => {
     delete config.__source;
     delete config.__self;
   }
-  console.log(type, config, children);
+  let defaultProps = type.defaultProps || {};
   const props = {
     ...config,
+    ...defaultProps,
     children: children.map((child) =>
       typeof child == "object" ? child : createTextNode(child)
     ),

@@ -23,10 +23,25 @@
 // import ReactDOM from "react-dom";
 import React from "./kkreact";
 import ReactDOM from "./kkreact/react-dom";
+import Component from "./kkreact/component";
+import "./index.css";
+function FunctionComponent(props) {
+  return <div className="border">FunctionComponent-{props.name}</div>;
+}
+class ClassComponent extends Component {
+  static defaultProps = {
+    name: "default",
+  };
+  render() {
+    return <div className="border">ClassComponent-{this.props.name}</div>;
+  }
+}
 const jsx = (
-  <div>
+  <div className="border">
     <p>全站</p>
     <a href="http://localhost:9000">Link</a>
+    <FunctionComponent name="function"></FunctionComponent>
+    <ClassComponent name="class"></ClassComponent>
   </div>
 );
 ReactDOM.render(jsx, document.getElementById("root"));
