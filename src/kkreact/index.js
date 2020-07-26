@@ -5,7 +5,8 @@ const createElement = (type, config, ...children) => {
     delete config.__source;
     delete config.__self;
   }
-  let defaultProps = type.defaultProps || {};
+  let defaultProps = {};
+  if (type && type.defaultProps) defaultProps = type.defaultProps || {};
   const props = {
     ...config,
     ...defaultProps,
@@ -13,6 +14,7 @@ const createElement = (type, config, ...children) => {
       typeof child == "object" ? child : createTextNode(child)
     ),
   };
+
   return { type, props };
 };
 function createTextNode(text) {

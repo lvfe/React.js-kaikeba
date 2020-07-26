@@ -33,7 +33,18 @@ class ClassComponent extends Component {
     name: "default",
   };
   render() {
-    return <div className="border">ClassComponent-{this.props.name}</div>;
+    return (
+      <div className="border">
+        ClassComponent-{this.props.name}
+        <button
+          onClick={() => {
+            console.log(123);
+          }}
+        >
+          Click
+        </button>
+      </div>
+    );
   }
 }
 const jsx = (
@@ -42,6 +53,15 @@ const jsx = (
     <a href="http://localhost:9000">Link</a>
     <FunctionComponent name="function"></FunctionComponent>
     <ClassComponent name="class"></ClassComponent>
+    {[1, 2].map((item) => (
+      <div key={item}>{item}</div>
+    ))}
+    <>
+      <h2>2</h2>
+      <h2>3</h2>
+    </>
   </div>
 );
 ReactDOM.render(jsx, document.getElementById("root"));
+// fragment, 少封装一点元素
+// jsx 通过babel-loader转

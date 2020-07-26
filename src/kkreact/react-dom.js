@@ -25,6 +25,8 @@ function createNode(vnode) {
       ? updateClass(vnode)
       : updateFunction(vnode);
     node = createNode(vvnode);
+  } else {
+    node = document.createDocumentFragment();
   }
   reconcileChildren(props.children, node);
   updateNode(node, props);
@@ -43,7 +45,8 @@ function updateFunction(vnode) {
 function reconcileChildren(children, node) {
   children.forEach((child) => {
     // node.appendChild(createNode(child));
-    render(child, node);
+    if (Array.isArray(child)) reconcileChildren(child, node);
+    else render(child, node);
   });
 }
 // for upate attribute
@@ -51,6 +54,10 @@ function updateNode(node, nextVal) {
   Object.keys(nextVal)
     .filter((i) => i !== "children")
     .forEach((key) => {
+      if (key.slice(0, 2) == "on") {
+        let eventName = key.slice(2).toLowerCase();
+        node.addEventListener(eventName, nextVal[key]);
+      }
       node[key] = nextVal[key];
     });
 }
