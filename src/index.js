@@ -51,9 +51,9 @@ const jsx = (
   <div className="border">
     <p>全站</p>
     <a href="http://localhost:9000">Link</a>
-    {/* <FunctionComponent name="function"></FunctionComponent>
+    <FunctionComponent name="function"></FunctionComponent>
     <ClassComponent name="class"></ClassComponent>
-    {[1, 2].map((item) => (
+    {/* {[1, 2].map((item) => (
       <div key={item}>{item}</div>
     ))}
     <>

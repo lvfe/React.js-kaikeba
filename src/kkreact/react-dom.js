@@ -46,10 +46,28 @@ function updateClass(vnode) {
   const { type, props } = vnode;
   let classObj = new type(props);
   return classObj.render();
+  //   const cmp = new type(props);
+  //   const children = [cmp.render()];
+  //   reconcileChildren(vnode, children);
 }
 function updateFunction(vnode) {
   const { type, props } = vnode;
   return type(props);
+}
+function updateClassFiber(fiber) {
+  const { type, props } = fiber;
+  let classObj = new type(props);
+  const children = [classObj.render()];
+  reconcileChildren(fiber, children);
+  //   const cmp = new type(props);
+  //   const children = [cmp.render()];
+  //   reconcileChildren(vnode, children);
+}
+function updateFunctionFiber(fiber) {
+  const { type, props } = fiber;
+  let cmp = type(props);
+  const children = [cmp];
+  reconcileChildren(fiber, children);
 }
 //! 深度优先遍历，考虑位置移动，同级比较 o(n)
 //! 1.del: node not exist;
@@ -135,6 +153,7 @@ function commitWorker(fiber) {
     return;
   }
   let parentFiber = fiber.return;
+  //向上查找， 因为有的fiber没有node, 如Provider, fragment, 需要找祖父
   while (!parentFiber.node) parentFiber = parentFiber.return;
   const parentNode = parentFiber.node;
   if (fiber.effectTag === "PLACEMENT" && fiber.node != null) {
@@ -153,6 +172,12 @@ function updateHostComponnet(fiber) {
   console.log("--fiber", fiber);
 }
 function performUnitOfWork(fiber) {
+  const { type } = fiber;
+  if (typeof type == "function") {
+    type.isReactComponent
+      ? updateClassFiber(fiber)
+      : updateFunctionFiber(fiber);
+  }
   //1. perfomr current
   updateHostComponnet(fiber);
   //2. return next
