@@ -22,11 +22,24 @@
 // import React, { Component } from "react";
 // import ReactDOM from "react-dom";
 import React from "./kkreact";
-import ReactDOM from "./kkreact/react-dom";
+import ReactDOM, { useState } from "./kkreact/react-dom";
 import Component from "./kkreact/component";
 import "./index.css";
 function FunctionComponent(props) {
-  return <div className="border">FunctionComponent-{props.name}</div>;
+  const [count, setCount] = useState(1);
+  return (
+    <div className="border">
+      FunctionComponent-{props.name}
+      <button
+        onClick={() => {
+          setCount(count + 1);
+        }}
+      >
+        {count}
+      </button>
+      {count % 2 ? <button>click</button> : <span>omg</span>}
+    </div>
+  );
 }
 class ClassComponent extends Component {
   static defaultProps = {
@@ -52,7 +65,7 @@ const jsx = (
     <p>全站</p>
     <a href="http://localhost:9000">Link</a>
     <FunctionComponent name="function"></FunctionComponent>
-    <ClassComponent name="class"></ClassComponent>
+    {/* <ClassComponent name="class"></ClassComponent> */}
     {/* {[1, 2].map((item) => (
       <div key={item}>{item}</div>
     ))}

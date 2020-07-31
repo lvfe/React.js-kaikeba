@@ -10,6 +10,9 @@ import { TEXT } from "./const";
 let nextUnitOfWork = null;
 // work in process fiber root
 let wipRoot = null;
+let currentRoot = null;
+//当前正工作的fiber
+let wipFiber = null;
 const render = (vnode, container) => {
   //   const node = createNode(vnode);
   //   container.appendChild(node);
@@ -64,6 +67,11 @@ function updateClassFiber(fiber) {
   //   reconcileChildren(vnode, children);
 }
 function updateFunctionFiber(fiber) {
+  wipFiber = fiber;
+  //!source code当中是对象
+  wipFiber.hooks = [];
+  wipFiber.hookIndex = 0;
+
   const { type, props } = fiber;
   let cmp = type(props);
   const children = [cmp];
@@ -83,9 +91,15 @@ function updateFunctionFiber(fiber) {
 // 协调子节点
 function reconcileChildren(workInProcessFiber, children) {
   let prevSibling = null;
+  let oldFiber = workInProcessFiber.base && workInProcessFiber.base.child;
   for (let i = 0; i < children.length; i++) {
     let child = children[i];
     if (child == null) return;
+    let sameType = child &&oldFiber&&child.type==oldFiber.type
+    if(sameType) {
+      // same type reuse
+    }
+    if(!sameType && child) // cjo;d exist, not same time
     let newFiber = {
       type: child.type,
       props: child.props,
@@ -94,8 +108,11 @@ function reconcileChildren(workInProcessFiber, children) {
       return: workInProcessFiber,
       effectTag: "PLACEMENT",
     };
+    if(!sameType&&!child){
+      // delete
+    }
     //形成链表结构
-    if (i == 0) {
+    if (i === 0) {
       workInProcessFiber.child = newFiber;
     } else {
       prevSibling.sibling = newFiber;
@@ -108,7 +125,7 @@ function updateNode(node, nextVal) {
   Object.keys(nextVal)
     .filter((i) => i !== "children")
     .forEach((key) => {
-      if (key.slice(0, 2) == "on") {
+      if (key.slice(0, 2) === "on") {
         let eventName = key.slice(2).toLowerCase();
         node.addEventListener(eventName, nextVal[key]);
       }
@@ -135,17 +152,20 @@ function updateNode(node, nextVal) {
 function workLoop(deadline) {
   // 有下个任务， 并且当前帧没有结束
   while (nextUnitOfWork && deadline.timeRemaining() > 1) {
+    console.log(1000);
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork); // execute curetn, return next
-    if (nextUnitOfWork == null && wipRoot) {
-      //没有任务了， 根节点还在
-      // commit
-      commitRoot();
-    }
   }
+  if (!nextUnitOfWork && wipRoot) {
+    //没有任务了， 根节点还在
+    // commit
+    commitRoot();
+  }
+  requestIdleCallback(workLoop);
 }
 function commitRoot() {
   commitWorker(wipRoot.child);
   //处于循环， 提交后置成null
+  currentRoot = wipRoot;
   wipRoot = null;
 }
 function commitWorker(fiber) {
@@ -179,7 +199,7 @@ function performUnitOfWork(fiber) {
       : updateFunctionFiber(fiber);
   }
   //1. perfomr current
-  updateHostComponnet(fiber);
+  else updateHostComponnet(fiber);
   //2. return next
   if (fiber.child) {
     return fiber.child;
@@ -194,5 +214,34 @@ function performUnitOfWork(fiber) {
   }
 }
 requestIdleCallback(workLoop);
-
+export function useState(init) {
+  const oldHook = wipFiber.base && wipFiber.base.hooks[wipFiber.hookIndex];
+  const hook = oldHook
+    ? {
+        state: oldHook.state,
+        queue: oldHook.queue,
+      }
+    : {
+        state: init,
+        queue: [],
+      };
+  // 模拟批量更新 【1,2,3】
+  hook.queue.forEach((action) => {
+    console.log(123, action);
+    hook.state = action;
+  });
+  const setState = (action) => {
+    //action can be func/value, setState异步的
+    hook.queue.push(action);
+    wipRoot = {
+      node: currentRoot.node,
+      props: currentRoot.props,
+      base: currentRoot,
+    };
+    nextUnitOfWork = wipRoot;
+  };
+  wipFiber.hooks.push(hook);
+  wipFiber.hookIndex++;
+  return [hook.state, setState];
+}
 export default { render };
