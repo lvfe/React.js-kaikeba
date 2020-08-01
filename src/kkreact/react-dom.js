@@ -5,7 +5,7 @@
 
 //     React.render(jsx, document.getElementById('body'))
 //vnode, node是zhenshi node
-import { TEXT } from "./const";
+import { TEXT, PLACEMENT, DELETEION, UPDATE } from "./const";
 // next单元任务
 let nextUnitOfWork = null;
 // work in process fiber root
@@ -13,7 +13,7 @@ let wipRoot = null;
 let currentRoot = null;
 //当前正工作的fiber
 let wipFiber = null;
-let deletions = [];
+let deletions = null;
 const render = (vnode, container) => {
   //   const node = createNode(vnode);
   //   container.appendChild(node);
@@ -24,6 +24,7 @@ const render = (vnode, container) => {
     },
   };
   nextUnitOfWork = wipRoot;
+  deletions = [];
 };
 
 function createNode(vnode) {
@@ -43,7 +44,7 @@ function createNode(vnode) {
     node = document.createDocumentFragment();
   }
   reconcileChildren(props.children, node);
-  updateNode(node, props);
+  updateNode(node, {}, props);
   return node;
 }
 function updateClass(vnode) {
@@ -59,6 +60,10 @@ function updateFunction(vnode) {
   return type(props);
 }
 function updateClassFiber(fiber) {
+  wipFiber = fiber;
+  //!source code当中是对象
+  wipFiber.hooks = [];
+  wipFiber.hookIndex = 0;
   const { type, props } = fiber;
   let classObj = new type(props);
   const children = [classObj.render()];
@@ -107,7 +112,7 @@ function reconcileChildren(workInProcessFiber, children) {
         node: oldFiber.node, //三种操作.可以复用
         base: oldFiber, //初次
         return: workInProcessFiber,
-        effectTag: "UPDATE",
+        effectTag: UPDATE,
       };
     }
     if (!sameType && child) {
@@ -118,15 +123,17 @@ function reconcileChildren(workInProcessFiber, children) {
         node: null, //三种操作.可以复用
         base: null, //初次
         return: workInProcessFiber,
-        effectTag: "PLACEMENT",
+        effectTag: PLACEMENT,
       };
     }
     if (!sameType && oldFiber) {
       // delete
-      oldFiber.effectTag = "DELETION";
+      oldFiber.effectTag = DELETEION;
       deletions.push(oldFiber);
+      console.log(deletions);
     }
     if (oldFiber) {
+      debugger;
       oldFiber = oldFiber.sibling;
     }
     //形成链表结构
@@ -139,15 +146,30 @@ function reconcileChildren(workInProcessFiber, children) {
   }
 }
 // for upate attribute
-function updateNode(node, nextVal) {
+// old {q:1} new {b:1}
+function updateNode(node, prev, nextVal) {
+  Object.keys(prev)
+    .filter((i) => i !== "children")
+    .forEach((key) => {
+      if (key.slice(0, 2) === "on") {
+        let eventName = key.slice(2).toLowerCase();
+        node.removeEventListener(eventName, prev[key]);
+      } else {
+        if (!(key in nextVal)) {
+          node[key] = "";
+        }
+      }
+    });
+
   Object.keys(nextVal)
     .filter((i) => i !== "children")
     .forEach((key) => {
       if (key.slice(0, 2) === "on") {
         let eventName = key.slice(2).toLowerCase();
         node.addEventListener(eventName, nextVal[key]);
+      } else {
+        node[key] = nextVal[key];
       }
-      node[key] = nextVal[key];
     });
 }
 // {
@@ -170,7 +192,7 @@ function updateNode(node, nextVal) {
 function workLoop(deadline) {
   // 有下个任务， 并且当前帧没有结束
   while (nextUnitOfWork && deadline.timeRemaining() > 1) {
-    console.log(1000);
+    console.log("working loop");
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork); // execute curetn, return next
   }
   if (!nextUnitOfWork && wipRoot) {
@@ -180,7 +202,16 @@ function workLoop(deadline) {
   }
   requestIdleCallback(workLoop);
 }
+function delFiber(fiber, parentNode) {
+  if (fiber.node) {
+    parentNode.removeChild(fiber.node);
+  } else {
+    delFiber(fiber.child, parentNode);
+  }
+}
 function commitRoot() {
+  debugger;
+  deletions.forEach(commitWorker);
   commitWorker(wipRoot.child);
   //处于循环， 提交后置成null
   currentRoot = wipRoot;
@@ -194,11 +225,13 @@ function commitWorker(fiber) {
   //向上查找， 因为有的fiber没有node, 如Provider, fragment, 需要找祖父
   while (!parentFiber.node) parentFiber = parentFiber.return;
   const parentNode = parentFiber.node;
-  if (fiber.effectTag === "PLACEMENT" && fiber.node != null) {
+  if (fiber.effectTag === PLACEMENT && fiber.node != null) {
     parentNode.append(fiber.node);
-  } else if (fiber.effectTag === "UPDATE" && fiber.node != null) {
+  } else if (fiber.effectTag === UPDATE && fiber.node != null) {
     // parentNode
-    updateNode(fiber.node, fiber.props);
+    updateNode(fiber.node, fiber.base.props, fiber.props);
+  } else if (fiber.effectTag === DELETEION && fiber.node != null) {
+    delFiber(fiber, parentNode);
   }
   commitWorker(fiber.child);
   commitWorker(fiber.sibling);
@@ -251,6 +284,7 @@ export function useState(init) {
     console.log(123, action);
     hook.state = action;
   });
+  deletions = [];
   const setState = (action) => {
     //action can be func/value, setState异步的
     hook.queue.push(action);
