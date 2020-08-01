@@ -13,6 +13,7 @@ let wipRoot = null;
 let currentRoot = null;
 //当前正工作的fiber
 let wipFiber = null;
+let deletions = [];
 const render = (vnode, container) => {
   //   const node = createNode(vnode);
   //   container.appendChild(node);
@@ -95,21 +96,38 @@ function reconcileChildren(workInProcessFiber, children) {
   for (let i = 0; i < children.length; i++) {
     let child = children[i];
     if (child == null) return;
-    let sameType = child &&oldFiber&&child.type==oldFiber.type
-    if(sameType) {
+    let newFiber = null;
+
+    let sameType = child && oldFiber && child.type == oldFiber.type;
+    if (sameType) {
       // same type reuse
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        node: oldFiber.node, //三种操作.可以复用
+        base: oldFiber, //初次
+        return: workInProcessFiber,
+        effectTag: "UPDATE",
+      };
     }
-    if(!sameType && child) // cjo;d exist, not same time
-    let newFiber = {
-      type: child.type,
-      props: child.props,
-      node: null, //三种操作
-      base: null, //初次
-      return: workInProcessFiber,
-      effectTag: "PLACEMENT",
-    };
-    if(!sameType&&!child){
+    if (!sameType && child) {
+      // child exist, not same time
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        node: null, //三种操作.可以复用
+        base: null, //初次
+        return: workInProcessFiber,
+        effectTag: "PLACEMENT",
+      };
+    }
+    if (!sameType && oldFiber) {
       // delete
+      oldFiber.effectTag = "DELETION";
+      deletions.push(oldFiber);
+    }
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
     }
     //形成链表结构
     if (i === 0) {
@@ -178,6 +196,9 @@ function commitWorker(fiber) {
   const parentNode = parentFiber.node;
   if (fiber.effectTag === "PLACEMENT" && fiber.node != null) {
     parentNode.append(fiber.node);
+  } else if (fiber.effectTag === "UPDATE" && fiber.node != null) {
+    // parentNode
+    updateNode(fiber.node, fiber.props);
   }
   commitWorker(fiber.child);
   commitWorker(fiber.sibling);
