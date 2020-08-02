@@ -14,6 +14,7 @@ let currentRoot = null;
 //当前正工作的fiber
 let wipFiber = null;
 let deletions = null;
+
 const render = (vnode, container) => {
   //   const node = createNode(vnode);
   //   container.appendChild(node);
@@ -33,18 +34,26 @@ function createNode(vnode) {
   if (type === TEXT) {
     const { nodeValue } = props;
     node = document.createTextNode(nodeValue);
+    updateNode(node, {}, props);
   } else if (typeof type === "string") {
     node = document.createElement(type);
+    updateNode(node, {}, props);
   } else if (typeof type === "function") {
     let vvnode = type.isReactComponent
       ? updateClass(vnode)
       : updateFunction(vnode);
     node = createNode(vvnode);
+    updateNode(node, {}, props);
   } else {
     node = document.createDocumentFragment();
+    if (props != null) {
+      console.log(123, node, props);
+      updateNode(node, {}, props);
+    } else {
+      updateNode(node, {}, { children: [] });
+    }
   }
-  reconcileChildren(props.children, node);
-  updateNode(node, {}, props);
+  // reconcileChildren(props.children, node);
   return node;
 }
 function updateClass(vnode) {
@@ -95,7 +104,174 @@ function updateFunctionFiber(fiber) {
 //   });
 // }
 // 协调子节点
-function reconcileChildren(workInProcessFiber, children) {
+function reconcileChildren(returnFiber, newChildren) {
+  let prevnewFiber = null;
+  let oldFiber = returnFiber.base && returnFiber.base.child;
+  //上一次插入位置v
+  let lastPlacedIndex = 0;
+  let nexIdx = 0;
+  let nextOldFIber = null;
+  let ShouldTrackSideEffect = true;
+  if (!oldFiber) {
+    ShouldTrackSideEffect = false;
+  }
+
+  for (; oldFiber != null && nexIdx < newChildren.length; nexIdx++) {
+    if (oldFiber.index > nexIdx) {
+      nextOldFIber = oldFiber;
+      oldFiber = null;
+    } else {
+      nextOldFIber = oldFiber.sibling;
+    }
+    let newChild = newChildren[nexIdx];
+    if (!(newChild.type === oldFiber.type && newChild.key === oldFiber.key)) {
+      if (oldFiber == null) {
+        oldFiber = nextOldFIber;
+      }
+      break;
+    }
+    // 可以复用
+    let newFiber = {
+      key: newChild.key,
+      type: newChild.type,
+      props: newChild.props,
+      node: oldFiber.node,
+      base: oldFiber,
+      return: returnFiber,
+      effectTag: UPDATE,
+    };
+    if (ShouldTrackSideEffect) {
+      if (oldFiber && newFiber.base === null) {
+        deletions.push({
+          ...oldFiber,
+          effectTag: DELETEION,
+        });
+      }
+    }
+    lastPlacedIndex = placeChild(
+      newFiber,
+      lastPlacedIndex,
+      nexIdx,
+      ShouldTrackSideEffect
+    );
+    if (prevnewFiber == null) {
+      returnFiber.child = newFiber;
+    } else {
+      prevnewFiber.sibling = newFiber;
+    }
+    prevnewFiber = newFiber;
+    oldFiber = nextOldFIber;
+  }
+
+  if (oldFiber == null) {
+    for (; nexIdx < newChildren.length; nexIdx++) {
+      let newCHild = newChildren[nexIdx];
+
+      let newFiber = {
+        key: newCHild.key,
+        type: newCHild.type,
+        props: newCHild.props,
+        node: null,
+        base: null,
+        return: returnFiber,
+        effectTag: PLACEMENT,
+      };
+
+      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, nexIdx);
+      if (prevnewFiber === null) {
+        returnFiber.child = newFiber;
+      } else prevnewFiber.sibling = newFiber;
+
+      prevnewFiber = newFiber;
+    }
+    return;
+  }
+  // keep scanning
+  //2->3->4 , [1,2,3]map{} delete
+  const existingChildren = mapRemaining(returnFiber, oldFiber);
+  for (; nexIdx < newChildren.length; nexIdx++) {
+    let newChild = newChildren[nexIdx];
+    let newFiber = {
+      key: newChild.key,
+      type: newChild.type,
+      props: newChild.props,
+
+      return: returnFiber,
+    };
+    const matched = existingChildren.get(
+      newFiber.key == null ? nexIdx : newFiber.key
+    );
+    if (matched) {
+      newFiber = {
+        ...newFiber,
+        node: matched.node,
+        base: matched,
+        effectTag: UPDATE,
+      };
+      ShouldTrackSideEffect &&
+        existingChildren.delete(newFiber.key == null ? nexIdx : newFiber.key);
+    } else {
+      newFiber = {
+        ...newFiber,
+        node: null,
+        base: null,
+        effectTag: PLACEMENT,
+      };
+    }
+    lastPlacedIndex = placeChild(
+      newFiber,
+      lastPlacedIndex,
+      nexIdx,
+      ShouldTrackSideEffect
+    );
+    if (prevnewFiber == null) {
+      returnFiber.child = newFiber;
+    } else {
+      prevnewFiber.sibling = newFiber;
+    }
+    prevnewFiber = newFiber;
+  }
+  if (ShouldTrackSideEffect) {
+    existingChildren.forEach((child) =>
+      deletions.push({
+        ...child,
+        effectTag: DELETEION,
+      })
+    );
+  }
+}
+function mapRemaining(returnFiber, currentFirstFiber) {
+  const existingChildren = new Map();
+  let existingChild = currentFirstFiber;
+  while (existingChild) {
+    if (existingChild.key != null) {
+      existingChildren.set(existingChild.key, existingChild);
+    } else {
+      existingChildren.set(existingChild.index, existingChild);
+    }
+    existingChild = existingChild.sibling;
+    return existingChildren;
+  }
+}
+function placeChild(newFiber, lastPlacedIndex, nexIdx, ShouldTrackSideEffect) {
+  newFiber.index = nexIdx;
+  if (!ShouldTrackSideEffect) {
+    return lastPlacedIndex;
+  }
+  let base = newFiber.base;
+  if (base != null) {
+    let oldIndex = base.index;
+    if (oldIndex < lastPlacedIndex) {
+      return lastPlacedIndex;
+    } else {
+      return oldIndex;
+    }
+  } else {
+    newFiber.effectTag = PLACEMENT;
+    return lastPlacedIndex;
+  }
+}
+function reconcileChildren_FIBER(workInProcessFiber, children) {
   let prevSibling = null;
   let oldFiber = workInProcessFiber.base && workInProcessFiber.base.child;
   for (let i = 0; i < children.length; i++) {
@@ -160,17 +336,17 @@ function updateNode(node, prev, nextVal) {
         }
       }
     });
-
-  Object.keys(nextVal)
-    .filter((i) => i !== "children")
-    .forEach((key) => {
-      if (key.slice(0, 2) === "on") {
-        let eventName = key.slice(2).toLowerCase();
-        node.addEventListener(eventName, nextVal[key]);
-      } else {
-        node[key] = nextVal[key];
-      }
-    });
+  if (nextVal != null)
+    Object.keys(nextVal)
+      .filter((i) => i !== "children")
+      .forEach((key) => {
+        if (key.slice(0, 2) === "on") {
+          let eventName = key.slice(2).toLowerCase();
+          node.addEventListener(eventName, nextVal[key]);
+        } else {
+          node[key] = nextVal[key];
+        }
+      });
 }
 // {
 // type， //标记类型
@@ -241,6 +417,7 @@ function updateHostComponnet(fiber) {
     fiber.node = createNode(fiber);
   }
   // 协调
+  console.log(fiber.props, "hello");
   const { children } = fiber.props;
   reconcileChildren(fiber, children);
   console.log("--fiber", fiber);

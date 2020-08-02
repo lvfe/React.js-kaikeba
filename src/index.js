@@ -28,16 +28,38 @@ import "./index.css";
 function FunctionComponent(props) {
   const [count, setCount] = useState(1);
   return (
-    <div className="border">
-      FunctionComponent-{props.name}
-      <button
-        onClick={() => {
-          setCount(count + 1);
-        }}
-      >
-        {count}
+    // <div className="border">
+    //   FunctionComponent-{props.name}
+    //   <button
+    //     onClick={() => {
+    //       setCount(count + 1);
+    //     }}
+    //   >
+    //     {count}
+    //   </button>
+    //   {count % 2 ? <button>click</button> : <span>omg</span>}
+    // </div>
+    <div className="border" key="border">
+      <button key="button" onClick={() => setCount(count + 1)}>
+        {count}： count add
       </button>
-      {count % 2 ? <button>click</button> : <span>omg</span>}
+
+      {count % 2 ? (
+        <ul>
+          <li key="0">0</li>
+          <li key="1">1</li>
+          <li key="2">2</li>
+          <li key="3">3</li>
+          <li key="4">4</li>
+        </ul>
+      ) : (
+        <ul>
+          <li key="0">0</li>
+          <li key="2">2</li>
+          <li key="3">3</li>
+          <li key="4">4</li>
+        </ul>
+      )}
     </div>
   );
 }
@@ -61,17 +83,18 @@ class ClassComponent extends Component {
   }
 }
 const jsx = (
-  <div className="border">
+  <div className="border" key="main">
     <p>全站</p>
     <a href="http://localhost:9000">Link</a>
-    <FunctionComponent name="function"></FunctionComponent>
-    {/* <ClassComponent name="class"></ClassComponent> */}
+
+    <FunctionComponent name="function" />
+    <ClassComponent name="class"></ClassComponent>
     {/* {[1, 2].map((item) => (
       <div key={item}>{item}</div>
-    ))}
-    <>
-      <h2>2</h2>
-      <h2>3</h2>
+    ))} */}
+    {/* <>
+      <h2 key="h2">2</h2>
+      <h2 key="h3">3</h2>
     </> */}
   </div>
 );
