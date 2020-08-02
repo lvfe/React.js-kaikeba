@@ -49,11 +49,12 @@ function createNode(vnode) {
     if (props != null) {
       console.log(123, node, props);
       updateNode(node, {}, props);
+      // reconcileChildren_old(props.children, node);
     } else {
+      // reconcileChildren_old(props.children, node);
       updateNode(node, {}, { children: [] });
     }
   }
-  // reconcileChildren(props.children, node);
   return node;
 }
 function updateClass(vnode) {
@@ -96,13 +97,13 @@ function updateFunctionFiber(fiber) {
 //! 1.del: node not exist;
 //! 2. replace: vnode， newndoe, (key , and type 不同)
 //! 3. update. (type key相同)vnode, newnode不同
-// function reconcileChildren_old(children, node) {
-//   children.forEach((child) => {
-//     // node.appendChild(createNode(child));
-//     if (Array.isArray(child)) reconcileChildren(child, node);
-//     else render(child, node);
-//   });
-// }
+function reconcileChildren_old(children, node) {
+  children.forEach((child) => {
+    // node.appendChild(createNode(child));
+    if (Array.isArray(child)) reconcileChildren(child, node);
+    else render(child, node);
+  });
+}
 // 协调子节点
 function reconcileChildren(returnFiber, newChildren) {
   let prevnewFiber = null;

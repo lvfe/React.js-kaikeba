@@ -92,12 +92,16 @@ const jsx = (
     {/* {[1, 2].map((item) => (
       <div key={item}>{item}</div>
     ))} */}
-    {/* <>
+    <>
       <h2 key="h2">2</h2>
       <h2 key="h3">3</h2>
-    </> */}
+    </>
   </div>
 );
 ReactDOM.render(jsx, document.getElementById("root"));
 // fragment, 少封装一点元素
 // jsx 通过babel-loader转
+//componentWillReciveProps在掛在後執行， 而不是初始化
+//react-redux不是通過contxt, 可以用過hook, connect, rather than context
+//children >component >render、、react-route沒有權限控制，可以通過hoc
+// Diff只比較同級，type, pops, children, key
